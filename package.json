@@ -1,8 +1,9 @@
 {
   "name": "@sh-winter/vite-plugin-qiankun",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "description": "vite qiankun plugin",
   "main": "dist/index.js",
+  "type": "module",
   "types": "dist/index.d.ts",
   "module": "dist/index.js",
   "scripts": {
@@ -26,8 +27,7 @@
     "slash": "^4.0.0",
     "srcset": "^5.0.0",
     "valid-data-url": "^4.0.0",
-    "@vue/compiler-core": "^3.2.30",
-    "@vue/compiler-sfc": "^3.2.30"
+    "@vue/compiler-sfc": "^3.2.0"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.0",
@@ -45,6 +45,7 @@
   },
   "peerDependencies": {
     "typescript": ">=4",
-    "vite": ">=2"
+    "vite": ">=2",
+    "@vue/compiler-sfc": ">=3"
   }
 }

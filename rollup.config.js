@@ -11,12 +11,15 @@ const banner = `
 `
 export default defineConfig({
   input: ['./src/index.ts', './src/helper.ts'],
-  external: pkg.dependencies,
+  external: [
+    'path',
+    ...Object.keys(pkg.dependencies)
+  ],
   plugins: [
     typescript()
   ],
   output: {
-    format: 'es',
+    format: 'esm',
     banner,
     dir: 'dist',
     name: pkg.name,
