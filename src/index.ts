@@ -102,16 +102,16 @@ export default (
         const script$ = scripts.last()
         script$?.html(`
         ${script$.html()}
-        window.appName = "${packageName}"
-        window["${packageName}"] = {}
+        window.appName = "${packageName}";
+        window["${packageName}"] = {};
         ['bootstrap', 'mount', 'unmount'].map(key => {
-          let resolve, reject
-          let promise = new Promise((_resolve, _reject) => (resolve = _resolve, reject = _reject))
+          let resolve, reject;
+          let promise = new Promise((_resolve, _reject) => (resolve = _resolve, reject = _reject));
           window["${packageName}"][key] = Object.assign(
             (...args) => promise.then(lifeCycleHook => lifeCycleHook(...args)),
             { resolve, reject }
-          )
-        })
+          );
+        });
         `.trimEnd() + '\n\t')
 
         return $.html()
