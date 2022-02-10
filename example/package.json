@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "scripts": {
+    "run:main": "cd main && vite --port=3000",
+    "run:main-build": "cd main && vite build && vite preview --port=3000",
+    "run:micro": "cd micro && vite --force --port=5000",
+    "run:micro-build": "cd micro && vite build && vite preview --port=5000"
+  },
+  "workspaces": {
+    "packages": [
+      "main",
+      "micro"
+    ]
+  }
+}

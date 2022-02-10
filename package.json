@@ -1,6 +1,6 @@
 {
   "name": "@sh-winter/vite-plugin-qiankun",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "vite qiankun plugin",
   "main": "dist/index.js",
   "type": "module",
