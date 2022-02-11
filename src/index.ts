@@ -11,6 +11,7 @@ import { parseSrcset, stringifySrcset } from 'srcset'
 /** vite/packages/vite/src/node/plugins/importAnalysisBuild.ts:26 */
 const preloadHelperId = 'vite/preload-helper'
 
+// qiankun 注入的子应用 public path
 const PUBLIC_PATH = '((window.proxy && window.proxy.__INJECTED_PUBLIC_PATH_BY_QIANKUN__) || "").slice(0, -1)'
 
 /** vite/packages/vite/src/node/plugins/asset.ts:78 */
@@ -22,6 +23,7 @@ const srcsetMarkerRE = /['"]__PUBLIC_PATH_SRCSET_MARKER__([A-Za-z0-9+/=]+)__['"]
 const assetMarkerRE = /['"](__VITE_ASSET__[a-z\d]{8}__(?:\$_(.*?)__)?)['"]/g
 const preloadMarkerRE = /(['"]__VITE_PRELOAD__['"])/g
 
+/** vue/packages/compiler-sfc/src/templateTransformAssetUrl.ts:37 */
 const defaultAssetUrlOptions: Required<AssetURLOptions> = {
   base: null,
   includeAbsolute: false,
@@ -38,7 +40,10 @@ const utf8ToBase64 = (utf8: string) => Buffer.from(utf8).toString('base64')
 const base64ToUtf8 = (base64: string) => Buffer.from(base64, 'base64').toString('utf-8')
 
 // vue compiler 插件，开发环境下使用，作用为注入 asset 标记
+let unusedFlag = true // 用于标记插件是否未使用的信号量，如果未使用，则跳过对应的标记替换阶段
 export const transformAssetUrl: NodeTransform = (node) => {
+  if (unusedFlag) unusedFlag = false
+
   if (node.type === 1) {
     if (!node.props.length) return
 
@@ -72,6 +77,7 @@ export interface PublicPathOptions {
   packageName: string
 }
 
+// 将 type=module 类型的 script 转为 通过动态导入模块的常规 script
 const moduleScriptToGeneralScript = (script$: Cheerio<Element>) => {
   if (!script$) return
   const scriptSrc = script$.attr('src')
@@ -88,9 +94,9 @@ export default (
   const { packageName } = options
   let config: ResolvedConfig
   return [
-    /* 开发、发布的是否都要用的 */
+    /* 开发、发布的时候都要用的 */
     {
-      name: 'vite-plugin-public-path:all',
+      name: 'vite-plugin-qiankun:all',
       enforce: 'post',
       configResolved (_config) {
         config = _config
@@ -98,8 +104,10 @@ export default (
       transformIndexHtml (html) { // 暴露 qiankun 生命周期钩子，配合 helper 使用
         const $ = cheerio.load(html)
         const scripts = $('script[type=module]')
+
         scripts.each((i, el) => moduleScriptToGeneralScript($(el)))
         const script$ = scripts.last()
+
         script$?.html(`
         ${script$.html()}
         window.appName = "${packageName}";
@@ -119,7 +127,7 @@ export default (
     },
     /* 开发时用的 */
     {
-      name: 'vite-plugin-public-path:serve',
+      name: 'vite-plugin-qiankun:serve',
       enforce: 'post',
       apply: 'serve',
       configureServer (server) { // 代理 serverResponse 的 end 方法，用于拦截处理 vite 最终注入的 @vite/client 热更程序
@@ -136,8 +144,10 @@ export default (
                 moduleScriptToGeneralScript($(viteClientScript))
                 html = $.html()
               }
+
               return end(html, ...args)
             }
+
             next()
           })
         }
@@ -155,31 +165,33 @@ export default (
             )
           }
         } else if (id.toLowerCase().endsWith('.vue')) { // vue 文件处理
-          /** vue/packages/compiler-sfc/src/templateTransformAssetUrl.ts */
-          code = code.replace(sourceMarkerRE, (match, $1) => { // 替换 url 类型的属性
-            return `${PUBLIC_PATH} + "${base64ToUtf8($1)}"`
-          })
+          if (!unusedFlag) {
+            /** vue/packages/compiler-sfc/src/templateTransformAssetUrl.ts */
+            code = code.replace(sourceMarkerRE, (match, $1) => { // 替换 url 类型的属性
+              return `${PUBLIC_PATH} + "${base64ToUtf8($1)}"`
+            })
 
-          /** vue/packages/compiler-sfc/src/templateTransformSrcset.ts */
-          code = code.replace(srcsetMarkerRE, (match, $1) => { // 替换 srcset 类型的属性
-            const srcsetText = base64ToUtf8($1)
-            const newSrcsetTexts = parseSrcset(srcsetText).map(
-              (srcsetDef): string => {
-                if (isDataURL(srcsetDef.url)) return `"${stringifySrcset([srcsetDef])}"`
+            /** vue/packages/compiler-sfc/src/templateTransformSrcset.ts */
+            code = code.replace(srcsetMarkerRE, (match, $1) => { // 替换 srcset 类型的属性
+              const srcsetText = base64ToUtf8($1)
+              const newSrcsetTexts = parseSrcset(srcsetText).map(
+                (srcsetDef): string => {
+                  if (isDataURL(srcsetDef.url)) return `"${stringifySrcset([srcsetDef])}"`
 
-                const newSrcsetDef = isDataURL(srcsetDef.url)
-                  ? srcsetDef
-                  : {
-                      ...srcsetDef,
-                      url: `${PUBLIC_PATH} + "${srcsetDef.url}`
-                    }
+                  const newSrcsetDef = isDataURL(srcsetDef.url)
+                    ? srcsetDef
+                    : {
+                        ...srcsetDef,
+                        url: `${PUBLIC_PATH} + "${srcsetDef.url}`
+                      }
 
-                return `${stringifySrcset([newSrcsetDef])}"`
-              }
-            )
+                  return `${stringifySrcset([newSrcsetDef])}"`
+                }
+              )
 
-            return newSrcsetTexts.join(' + ", " + ')
-          })
+              return newSrcsetTexts.join(' + ", " + ')
+            })
+          }
         }
 
         return code
@@ -187,25 +199,29 @@ export default (
     },
     /* 发布时用的 */
     {
-      name: 'vite-plugin-public-path:build',
+      name: 'vite-plugin-qiankun:build',
       enforce: 'post',
       apply: 'build',
       transform (code, id) {
         if (id === preloadHelperId) { // vite 在处理预加载时，会直接将 base 附加在内容前面，我们需要将它给替换掉
-          /** vite/packages/vite/src/node/plugins/importAnalysisBuild.ts */
+          /** vite/packages/vite/src/node/plugins/importAnalysisBuild.ts:95 */
           return code.replace(/const base = ['"].*?['"]/, "const base = ''")
         }
-        // 此时，vite 还没有替换掉 asset 的标记，把路径给拼接上
+
+        // 替换 vite 的 asset 的标记(__VITE_ASSET__)，把路径给拼接上
         code = code.replace(assetMarkerRE, `${PUBLIC_PATH} + "$1"`)
+
         return code
       },
       transformIndexHtml (html) { // qiankun 依赖项中的 html-import-entry 暂不支持 modulepreload，所以暂时替换为 preload
         const $ = cheerio.load(html)
+
         $('link[rel=modulepreload]').each((i, link) => {
           $(link)
             .attr('rel', 'preload')
             .attr('as', 'script')
         })
+
         return $.html()
       },
       generateBundle ({ format }, bundle) { // 处理预加载资源，添加动态公共路径
@@ -213,6 +229,8 @@ export default (
 
         for (const chunk of Object.values(bundle)) {
           if (chunk.type !== 'chunk') continue
+
+          // 这里的 base 默认是由 vite 直接添加在最前面的，所以我们在上面把 base 替换为空字符串，在此处添加
           chunk.code = chunk.code
             .replace(
               preloadMarkerRE,

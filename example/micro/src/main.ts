@@ -1,11 +1,11 @@
 import { createApp, type App as AppType } from 'vue'
 import App from './App.vue'
 import router from './router'
-import exportLifeCycleHooks, { qiankunWindow } from '@sh-winter/vite-plugin-qiankun/dist/helper';
+import exportLifeCycleHooks, { qiankunWindow } from '@sh-winter/vite-plugin-qiankun/dist/helper'
 
-let app: AppType;
+let app: AppType
 
-function render(root: Element | Document = document) {
+function render (root: Element | Document = document) {
   app = createApp(App)
 
   app.use(router)
@@ -13,17 +13,17 @@ function render(root: Element | Document = document) {
 }
 
 exportLifeCycleHooks({
-  bootstrap() {
+  bootstrap () {
     // do nothing.
   },
-  mount(props: { container: Element }) {
-    render(props.container);
+  mount (props: { container: Element }) {
+    render(props.container)
   },
-  unmount() {
-    app?.unmount();
+  unmount () {
+    app?.unmount()
   }
 })
 
 if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
-  render();
+  render()
 }
