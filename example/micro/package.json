@@ -12,7 +12,7 @@
     "vue-router": "^4.0.12"
   },
   "devDependencies": {
-    "@sh-winter/vite-plugin-qiankun": "^0.0.9",
+    "@sh-winter/vite-plugin-qiankun": "latest",
     "@types/node": "^17.0.13",
     "@vitejs/plugin-vue": "^2.0.0",
     "typescript": "^4.4.4",
