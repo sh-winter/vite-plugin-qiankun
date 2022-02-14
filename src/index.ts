@@ -1,6 +1,5 @@
 import path from 'path'
-import slash from 'slash'
-import { type Plugin, type ResolvedConfig } from 'vite'
+import { normalizePath, type Plugin, type ResolvedConfig } from 'vite'
 import { type ServerResponse } from 'http'
 import cheerio, { type Cheerio, type Element } from 'cheerio'
 import isDataURL from 'valid-data-url'
@@ -154,7 +153,7 @@ export default (
       },
       transform (code, id) {
         if (assetRE.test(code)) { // 动态导入资源文件处理
-          const url = config.base + slash(path.relative(config.root, id))
+          const url = config.base + normalizePath(path.relative(config.root, id))
           const assetURL = code?.match?.(assetRE)?.groups?.assetURL
 
           if (url === assetURL) {

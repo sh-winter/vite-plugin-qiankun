@@ -1,6 +1,6 @@
 {
   "name": "@sh-winter/vite-plugin-qiankun",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "vite qiankun plugin",
   "main": "dist/index.cjs",
   "types": "dist/index.d.ts",
@@ -23,7 +23,6 @@
   "license": "MIT",
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
-    "slash": "^4.0.0",
     "srcset": "^5.0.0",
     "valid-data-url": "^4.0.0",
     "@vue/compiler-sfc": "^3.2.0"
