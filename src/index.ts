@@ -247,7 +247,7 @@ export const qiankunPlugin = (
           chunk.code = chunk.code
             .replace(
               preloadMarkerRE,
-              `$1.map(url => ${PUBLIC_PATH} + \`\${url}\`)`
+              `$1.map(url => ${PUBLIC_PATH} + \`/\${url}\`)`
             )
         }
       }
