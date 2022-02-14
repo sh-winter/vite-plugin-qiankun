@@ -12,7 +12,7 @@ function App () {
     registerMicroApps([
       {
         name: 'micro-app-vue',
-        entry: `${location.protocol}//localhost:5000/micro-app-vue`,
+        entry: `${location.protocol}//localhost:5000/micro-app-vue/`,
         container: microAppContainerRef.current,
         activeRule: '/micro-app-vue'
       }

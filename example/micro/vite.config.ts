@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { name as packageName } from './package.json'
-import qiankun, { transformAssetUrl } from '@sh-winter/vite-plugin-qiankun'
+import { qiankunPlugin, transformAssetUrl } from '@sh-winter/vite-plugin-qiankun'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,6 +14,6 @@ export default defineConfig({
         }
       }
     }),
-    qiankun({ packageName })
+    qiankunPlugin({ packageName })
   ]
 })
