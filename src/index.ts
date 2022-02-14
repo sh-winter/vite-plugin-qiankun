@@ -5,7 +5,7 @@ import cheerio, { type Cheerio, type Element } from 'cheerio'
 import isDataURL from 'valid-data-url'
 import { type AssetURLOptions } from '@vue/compiler-sfc'
 import { type NodeTransform } from '@vue/compiler-core'
-import srcset from 'srcset'
+import * as srcset from 'srcset'
 
 /** vite/packages/vite/src/node/plugins/importAnalysisBuild.ts:26 */
 const preloadHelperId = 'vite/preload-helper'
@@ -80,14 +80,15 @@ export interface PublicPathOptions {
 }
 
 // 将 type=module 类型的 script 转为 通过动态导入模块的常规 script
-const moduleScriptToGeneralScript = (script$: Cheerio<Element>) => {
+const moduleScriptToGeneralScript = (script$: Cheerio<Element>, publicPath: string) => {
   if (!script$) return
   const scriptSrc = script$.attr('src')
   if (!scriptSrc) return
+
   script$
     .removeAttr('src')
     .removeAttr('type')
-    .html(`import(${PUBLIC_PATH} + "${scriptSrc}")`)
+    .html(`import(${publicPath} + "${scriptSrc}")`)
 }
 
 export default (
@@ -95,19 +96,26 @@ export default (
 ): Plugin[] => {
   const { packageName } = options
   let config: ResolvedConfig
+  let publicPath = PUBLIC_PATH
   return [
     /* 开发、发布的时候都要用的 */
     {
       name: 'vite-plugin-qiankun:all',
       enforce: 'post',
       configResolved (_config) {
-        config = _config
+        config = _config;
+
+        let base = config.base;
+        if (base = base.replace(/\/$/, '')) {
+          const baseRE = new RegExp(`${base}$`)
+          publicPath = `${PUBLIC_PATH}.replace(${baseRE}, '')`
+        }
       },
       transformIndexHtml (html) { // 暴露 qiankun 生命周期钩子，配合 helper 使用
         const $ = cheerio.load(html)
         const scripts = $('script[type=module]')
 
-        scripts.each((i, el) => moduleScriptToGeneralScript($(el)))
+        scripts.each((i, el) => moduleScriptToGeneralScript($(el), publicPath))
         const script$ = scripts.last()
 
         script$?.html(`
@@ -143,7 +151,7 @@ export default (
               if (typeof html === 'string') {
                 const $ = cheerio.load(html)
                 const viteClientScript = $(`script[src=${config.base}@vite/client]`)[0]
-                moduleScriptToGeneralScript($(viteClientScript))
+                moduleScriptToGeneralScript($(viteClientScript), publicPath)
                 html = $.html()
               }
 
@@ -163,14 +171,14 @@ export default (
             /** vite/packages/vite/src/node/plugins/asset.ts */
             code = code.replace(
               assetRE,
-              `export default ${PUBLIC_PATH} + "$1"`
+              `export default ${publicPath} + "$1"`
             )
           }
         } else if (id.toLowerCase().endsWith('.vue')) { // vue 文件处理
           if (!unusedFlag) {
             /** vue/packages/compiler-sfc/src/templateTransformAssetUrl.ts */
             code = code.replace(sourceMarkerRE, (match, $1) => { // 替换 url 类型的属性
-              return `${PUBLIC_PATH} + "${base64ToUtf8($1)}"`
+              return `${publicPath} + "${base64ToUtf8($1)}"`
             })
 
             /** vue/packages/compiler-sfc/src/templateTransformSrcset.ts */
@@ -187,7 +195,7 @@ export default (
                     ? srcsetDef
                     : {
                         ...srcsetDef,
-                        url: `${PUBLIC_PATH} + "${srcsetDef.url}`
+                        url: `${publicPath} + "${srcsetDef.url}`
                       }
 
                   return `${srcset.stringify([newSrcsetDef])}"`
@@ -214,7 +222,7 @@ export default (
         }
 
         // 替换 vite 的 asset 的标记(__VITE_ASSET__)，把路径给拼接上
-        code = code.replace(assetMarkerRE, `${PUBLIC_PATH} + "$1"`)
+        code = code.replace(assetMarkerRE, `${publicPath} + "$1"`)
 
         return code
       },
@@ -239,7 +247,7 @@ export default (
           chunk.code = chunk.code
             .replace(
               preloadMarkerRE,
-              `$1.map(url => ${PUBLIC_PATH} + "${config.base}" + \`\${url}\`)`
+              `$1.map(url => ${PUBLIC_PATH} + \`\${url}\`)`
             )
         }
       }
