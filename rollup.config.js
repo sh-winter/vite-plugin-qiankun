@@ -9,20 +9,34 @@ const banner = `
   * Released under the MIT License.
   */
 `
-export default defineConfig({
-  input: ['./src/index.ts', './src/helper.ts'],
-  external: [
-    'path',
-    ...Object.keys(pkg.dependencies)
-  ],
-  plugins: [
-    typescript()
-  ],
-  output: {
-    format: 'esm',
-    banner,
-    dir: 'dist',
-    name: pkg.name,
-    exports: 'auto'
+
+/**
+ * 生成 rollup config
+ * @param {'es'|'cjs'} format 
+ * @returns {import('rollup').RollupOptions}
+ */
+function genConfig(format) {
+  return {
+    input: ['./src/index.ts', './src/helper.ts'],
+    external: [
+      'path',
+      ...Object.keys(pkg.dependencies)
+    ],
+    plugins: [
+      typescript()
+    ],
+    output: {
+      format,
+      banner,
+      entryFileNames: `[name].${format === 'es' ? 'mjs' : 'cjs'}`,
+      dir: 'dist',
+      name: pkg.name,
+      exports: 'auto'
+    }
   }
-})
+}
+
+export default defineConfig([
+  genConfig('es'),
+  genConfig('cjs')
+])
