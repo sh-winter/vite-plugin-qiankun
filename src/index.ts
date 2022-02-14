@@ -5,7 +5,7 @@ import cheerio, { type Cheerio, type Element } from 'cheerio'
 import isDataURL from 'valid-data-url'
 import { type AssetURLOptions } from '@vue/compiler-sfc'
 import { type NodeTransform } from '@vue/compiler-core'
-import { parseSrcset, stringifySrcset } from 'srcset'
+import srcset from 'srcset'
 
 /** vite/packages/vite/src/node/plugins/importAnalysisBuild.ts:26 */
 const preloadHelperId = 'vite/preload-helper'
@@ -38,6 +38,8 @@ const defaultAssetUrlOptions: Required<AssetURLOptions> = {
 const utf8ToBase64 = (utf8: string) => Buffer.from(utf8).toString('base64')
 const base64ToUtf8 = (base64: string) => Buffer.from(base64, 'base64').toString('utf-8')
 
+const isFullUrl = (url) => /^https?:\/\//.test(url)
+
 // vue compiler 插件，开发环境下使用，作用为注入 asset 标记
 let unusedFlag = true // 用于标记插件是否未使用的信号量，如果未使用，则跳过对应的标记替换阶段
 export const transformAssetUrl: NodeTransform = (node) => {
@@ -64,7 +66,8 @@ export const transformAssetUrl: NodeTransform = (node) => {
       } else {
         if (
           content.startsWith('#') ||
-          isDataURL(content)
+          isDataURL(content) ||
+          isFullUrl(content)
         ) return
         value.content = `__PUBLIC_PATH_SOURCE_MARKER__${utf8ToBase64(content)}__`
       }
@@ -173,9 +176,12 @@ export default (
             /** vue/packages/compiler-sfc/src/templateTransformSrcset.ts */
             code = code.replace(srcsetMarkerRE, (match, $1) => { // 替换 srcset 类型的属性
               const srcsetText = base64ToUtf8($1)
-              const newSrcsetTexts = parseSrcset(srcsetText).map(
+              const newSrcsetTexts = srcset.parse(srcsetText).map(
                 (srcsetDef): string => {
-                  if (isDataURL(srcsetDef.url)) return `"${stringifySrcset([srcsetDef])}"`
+                  if (
+                    isDataURL(srcsetDef.url) ||
+                    isFullUrl(srcsetDef.url)
+                  ) return `"${srcset.stringify([srcsetDef])}"`
 
                   const newSrcsetDef = isDataURL(srcsetDef.url)
                     ? srcsetDef
@@ -184,7 +190,7 @@ export default (
                         url: `${PUBLIC_PATH} + "${srcsetDef.url}`
                       }
 
-                  return `${stringifySrcset([newSrcsetDef])}"`
+                  return `${srcset.stringify([newSrcsetDef])}"`
                 }
               )
 

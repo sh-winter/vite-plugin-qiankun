@@ -28,10 +28,10 @@ function genConfig(format) {
     output: {
       format,
       banner,
-      entryFileNames: `[name].${format === 'es' ? 'mjs' : 'cjs'}`,
+      entryFileNames: `[name].${format === 'es' ? 'mjs' : 'js'}`,
       dir: 'dist',
       name: pkg.name,
-      exports: 'auto'
+      exports: 'named'
     }
   }
 }
