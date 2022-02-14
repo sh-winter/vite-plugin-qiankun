@@ -91,7 +91,7 @@ const moduleScriptToGeneralScript = (script$: Cheerio<Element>, publicPath: stri
     .html(`import(${publicPath} + "${scriptSrc}")`)
 }
 
-export default (
+export const qiankunPlugin = (
   options: PublicPathOptions
 ): Plugin[] => {
   const { packageName } = options
@@ -254,3 +254,5 @@ export default (
     }
   ]
 }
+
+export default qiankunPlugin
