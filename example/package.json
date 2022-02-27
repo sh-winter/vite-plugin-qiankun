@@ -4,12 +4,17 @@
     "run:main": "cd main && vite --port=3000",
     "run:main-build": "cd main && vite build && vite preview --port=3000",
     "run:micro": "cd micro && vite --force --port=5000",
-    "run:micro-build": "cd micro && vite build && vite preview --port=5000"
+    "run:micro-build": "cd micro && vite build && vite preview --port=5000",
+    "run:dev": "npm-run-all -p run:main run:micro",
+    "run:build": "npm-run-all -p run:main-build run:micro-build"
   },
   "workspaces": {
     "packages": [
       "main",
       "micro"
     ]
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
   }
 }

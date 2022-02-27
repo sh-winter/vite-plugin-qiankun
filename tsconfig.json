@@ -11,11 +11,12 @@
     "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": [
-    "src"
+    "src",
   ],
   "exclude": [
-    "test"
+    "dist"
   ]
 }

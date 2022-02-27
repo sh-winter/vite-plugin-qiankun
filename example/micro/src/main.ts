@@ -1,7 +1,8 @@
 import { createApp, type App as AppType } from 'vue'
 import App from './App.vue'
 import router from './router'
-import exportLifeCycleHooks, { qiankunWindow } from '@sh-winter/vite-plugin-qiankun/dist/helper'
+import exportLifeCycleHooks, { qiankunWindow } from '../../../dist/helper'
+// import exportLifeCycleHooks, { qiankunWindow } from '@sh-winter/vite-plugin-qiankun/dist/helper'
 
 let app: AppType
 

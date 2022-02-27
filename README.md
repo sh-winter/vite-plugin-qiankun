@@ -80,16 +80,5 @@ if (!qiankunWindow.__POWERED_BY_QIANKUN__) {
 ### 查看示例
 
 ```bash
-cd example
-yarn
-
-# 启动主应用(react)
-yarn run:main
-# or
-yarn run:main-build
-
-# 启动子应用(vue3)
-yarn run:micro
-# or
-yarn run:micro-build
+yarn example
 ```

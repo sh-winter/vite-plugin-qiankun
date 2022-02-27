@@ -103,10 +103,10 @@ export const qiankunPlugin = (
       name: 'vite-plugin-qiankun:all',
       enforce: 'post',
       configResolved (_config) {
-        config = _config;
+        config = _config
 
-        let base = config.base;
-        if (base = base.replace(/\/$/, '')) {
+        const base = config.base.replace(/\/$/, '')
+        if (base) {
           const baseRE = new RegExp(`${base}$`)
           publicPath = `${PUBLIC_PATH}.replace(${baseRE}, '')`
         }

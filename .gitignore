@@ -2,3 +2,7 @@ node_modules
 dist
 yarn-error.log
 yarn.lock
+!/cypress/
+/cypress/*
+!/cypress/integration/
+!/cypress/tsconfig.json

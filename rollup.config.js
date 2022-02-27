@@ -9,16 +9,33 @@ const banner = `
   * Released under the MIT License.
   */
 `
-<<<<<<< Updated upstream
+
+const configs = [
+  {
+    input: ['./src/index.ts'],
+    'output:format': 'es',
+    'output:entryFileNames': '[name].mjs'
+  },
+  {
+    input: ['./src/index.ts'],
+    'output:format': 'cjs',
+    'output:entryFileNames': '[name].js'
+  },
+  {
+    input: ['./src/helper.ts'],
+    'output:format': 'es',
+    'output:entryFileNames': '[name].js'
+  }
+]
 
 /**
  * 生成 rollup config
- * @param {'es'|'cjs'} format 
+ * @param {configs[0]} config
  * @returns {import('rollup').RollupOptions}
  */
-function genConfig(format) {
+function genConfig (config) {
   return {
-    input: ['./src/index.ts', './src/helper.ts'],
+    input: config.input,
     external: [
       'path',
       ...Object.keys(pkg.dependencies)
@@ -27,33 +44,14 @@ function genConfig(format) {
       typescript()
     ],
     output: {
-      format,
+      format: config['output:format'],
       banner,
-      entryFileNames: `[name].${format === 'es' ? 'mjs' : 'js'}`,
+      entryFileNames: config['output:entryFileNames'],
       dir: 'dist',
       name: pkg.name,
       exports: 'named'
     }
-=======
-export default defineConfig({
-  input: ['./src/index.ts', './src/helper.ts'],
-  external: [
-    ...Object.keys(pkg.dependencies)
-  ],
-  plugins: [
-    typescript()
-  ],
-  output: {
-    format: 'esm',
-    banner,
-    dir: 'dist',
-    name: pkg.name,
-    exports: 'auto'
->>>>>>> Stashed changes
   }
 }
 
-export default defineConfig([
-  genConfig('es'),
-  genConfig('cjs')
-])
+export default defineConfig(configs.map(genConfig))

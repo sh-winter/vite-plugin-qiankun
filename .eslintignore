@@ -1,4 +1,3 @@
-test/**
-types/**
 dist/**
-*.vue
+cypress/**
+*.html
