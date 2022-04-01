@@ -1,6 +1,6 @@
 {
   "name": "@sh-winter/vite-plugin-qiankun",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "vite qiankun plugin",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,8 +9,8 @@
     "build": "tsc && rollup -c",
     "test": "yarn build && cd scripts && esmo test.ts",
     "example": "npm run example-dev",
-    "example-dev": "yarn build && cd example && yarn && yarn run:dev",
-    "example-build": "yarn build && cd example && yarn && yarn run:dev"
+    "example-dev": "yarn build && cd example && yarn && npm run run:dev",
+    "example-build": "yarn build && cd example && yarn && npm run run:build"
   },
   "keywords": [
     "vite",
