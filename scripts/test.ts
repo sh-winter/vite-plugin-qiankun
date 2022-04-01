@@ -60,7 +60,7 @@ async function run () {
   console.log('installing dependencies...')
   await exec('yarn', { cwd: '../example/' })
 
-  console.log('dependent installation complete.')
+  console.log('dependent installed.')
 
   const viteModule = await import('vite')
 
@@ -74,6 +74,7 @@ async function run () {
     const { address, port } = httpServers[0].address() as AddressInfo
     const baseUrl = `http://${address}:${port}`
 
+    console.log('start testing...')
     await new Promise((resolve, reject) => {
       const process = spawn(
         '.\\node_modules\\.bin\\cypress.cmd',
